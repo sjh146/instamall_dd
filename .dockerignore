@@ -20,6 +20,13 @@ yarn-error.log*
 .npm
 .yarn-integrity
 
+# Vite
+frontend/dist/
+frontend/.vite/
+frontend/vite.config.*.timestamp-*
+frontend/vite.config.*.timestamp-*
+frontend/*.local
+
 # Python (for backend)
 __pycache__/
 *.py[cod]

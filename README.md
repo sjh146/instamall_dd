@@ -69,64 +69,6 @@ docker-compose -f docker-compose.separated.yml up -d backend
 docker-compose -f docker-compose.separated.yml up -d frontend
 ```
 
-## ☁️ AWS EC2 배포
-
-### 1. EC2 인스턴스 준비
-
-- RHEL 10 AMI 선택
-- 보안 그룹에서 포트 3000, 5000, 5432, 22 열기
-- 최소 2GB RAM, 20GB 스토리지 권장
-
-### 2. 분리된 서비스 배포
-
-```bash
-# 프로젝트 파일 업로드
-scp -r . ec2-user@your-ec2-ip:/home/ec2-user/instagram-web
-
-# EC2에 접속
-ssh ec2-user@your-ec2-ip
-
-# Docker 및 Docker Compose 설치
-sudo yum update -y
-sudo yum install -y docker
-sudo systemctl start docker
-sudo systemctl enable docker
-sudo usermod -a -G docker ec2-user
-
-# Docker Compose 설치
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# 서비스 실행
-cd instagram-web
-docker-compose -f docker-compose.separated.yml up -d --build
-```
-
-### 3. 서비스 모니터링
-
-```bash
-# 서비스 상태 확인
-docker-compose -f docker-compose.separated.yml ps
-
-# 로그 확인
-docker-compose -f docker-compose.separated.yml logs -f
-
-# 특정 서비스 재시작
-docker-compose -f docker-compose.separated.yml restart backend
-```
-
-# 이미지 가져오기
-docker pull dduckbeagy/instagram-web-service:latest
-
-# 컨테이너 실행
-docker run -d \
-  --name instagram-web-service \
-  -p 3000:3000 \
-  -p 5000:5000 \
-  --restart unless-stopped \
-  dduckbeagy/instagram-web-service:latest
-```
-
 ## 🔧 환경 설정
 
 ### 환경 변수
@@ -196,8 +138,8 @@ docker restart instagram-web-service
 ### 일반적인 문제들
 
 1. **포트 충돌**: 다른 서비스가 3000/5000 포트 사용 중
-2. **메모리 부족**: EC2 인스턴스 크기 증가
-3. **네트워크 문제**: 보안 그룹 설정 확인
+2. **메모리 부족**: 시스템 리소스 확인 및 증가
+3. **네트워크 문제**: 방화벽 및 네트워크 설정 확인
 
 ### 로그 확인
 

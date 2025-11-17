@@ -59,7 +59,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # React 프론트엔드 (개발용)
+  # Vite React 프론트엔드 (개발용)
   frontend:
     build:
       context: .

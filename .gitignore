@@ -20,6 +20,12 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+
+# Vite
+.vite/
+dist/
+*.local
 
 # Python
 __pycache__/
@@ -79,6 +85,13 @@ build/
 dist/
 *.tgz
 *.tar.gz
+
+# Vite
+frontend/dist/
+frontend/.vite/
+frontend/vite.config.*.timestamp-*
+frontend/*.local
+frontend/.vite-cache/
 
 # Coverage reports
 htmlcov/
