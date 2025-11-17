@@ -9,6 +9,20 @@ RUN curl -fsSL https://rpm.nodesource.com/setup_18.x | bash - && \
 # 작업 디렉토리 설정
 WORKDIR /app
 
+# Build arguments for environment variables
+ARG REACT_APP_API_URL
+ARG REACT_APP_PAYPAL_CLIENT_ID
+ARG REACT_APP_BACKEND_URL
+ARG REACT_APP_BACKEND_PORT
+ARG NODE_ENV
+
+# Set environment variables for build
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV REACT_APP_PAYPAL_CLIENT_ID=$REACT_APP_PAYPAL_CLIENT_ID
+ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_PORT=$REACT_APP_BACKEND_PORT
+ENV NODE_ENV=$NODE_ENV
+
 # 프론트엔드 의존성 설치
 COPY frontend/package*.json ./
 RUN npm ci
@@ -23,5 +37,47 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3000/ || exit 1
 
-# 개발 모드로 React 앱 실행
-CMD ["npm", "start"]
+# 프로덕션 빌드 및 실행 (with environment variables)
+RUN npm run build
+
+# nginx 설치
+RUN dnf install -y nginx && \
+    dnf clean all
+
+# nginx 설정
+COPY <<EOF /etc/nginx/nginx.conf
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    
+    server {
+        listen 3000;
+        server_name localhost;
+        root /app/build;
+        index index.html;
+        
+        location / {
+            try_files \$uri \$uri/ /index.html;
+        }
+        
+        location /static/ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+        
+        location /ws {
+            return 404;
+        }
+    }
+}
+EOF
+
+# 포트 노출
+EXPOSE 3000
+
+# nginx 실행
+CMD ["nginx", "-g", "daemon off;"]

@@ -12,10 +12,22 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # PayPal 설정 (샌드박스 환경)
-    PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID', 'AYclIN8z4NgfjpWr7HIUOAip4fOM69wFvd9BKw7g1GFCkfnZcRwHaNGqQl2M0f8286oQRmUCK1qhp82k')
-    PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET', 'ENMSCRX03HWGc1BHqLUOfngB_IoIpBffyvJ2YwnmBuxjd3jpN7UCJJGE0FkoEi2GpLecNCfr5LUhJab3')
-    PAYPAL_MODE = 'sandbox'  # 명시적으로 샌드박스 모드 설정
+    # SQLAlchemy 엔진 설정 개선
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_timeout': 20,
+        'max_overflow': 0,
+        'pool_size': 10
+    }
+    
+    # PayPal 설정 (환경 변수로 설정 가능)
+    PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID')
+    PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
+    PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'live')  # 'sandbox' 또는 'live'
+    PAYPAL_WEBHOOK_SECRET = os.getenv('PAYPAL_WEBHOOK_SECRET')
+    PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID')
+    PAYPAL_WEBHOOK_URL = os.getenv('PAYPAL_WEBHOOK_URL')
     
     # Flask 설정
-    SECRET_KEY = os.getenv('SECRET_KEY', 'ENMSCRX03HWGc1BHqLUOfngB_IoIpBffyvJ2YwnmBuxjd3jpN7UCJJGE0FkoEi2GpLecNCfr5LUhJab3') 
+    SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here') 

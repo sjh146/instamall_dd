@@ -4,6 +4,22 @@
 
 PayPal 웹훅 시크릿은 웹훅의 무결성을 검증하기 위한 비밀키입니다. PayPal에서 보낸 웹훅이 실제로 PayPal에서 온 것인지 확인하는 데 사용됩니다.
 
+## 📋 현재 웹훅 설정
+
+### **웹훅 정보**
+```
+Webhook URL: https://192.168.75.39/api/webhooks/paypal
+Webhook ID: 7K771721GD998503X
+Events Tracked: All Events
+```
+
+### **PayPal 계정 정보**
+```
+App Name: dduckbeagy
+Client ID: AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+Secret Key: EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC
+```
+
 ## 🔍 웹훅 ID vs 웹훅 시크릿
 
 ### **📋 차이점**
@@ -11,7 +27,7 @@ PayPal 웹훅 시크릿은 웹훅의 무결성을 검증하기 위한 비밀키�
 | 구분 | 웹훅 ID | 웹훅 시크릿 |
 |------|---------|-------------|
 | **용도** | 웹훅을 식별하는 고유 번호 | 웹훅 서명을 검증하는 비밀키 |
-| **형태** | `WH-1234567890ABCDEF` | `1234567890abcdef1234567890abcdef` |
+| **형태** | `7K771721GD998503X` | `1234567890abcdef1234567890abcdef` |
 | **위치** | 웹훅 목록에서 확인 | 웹훅 상세 페이지에서 확인 |
 | **사용처** | 웹훅 관리, 삭제, 수정 | 서명 검증, 보안 |
 
@@ -22,7 +38,7 @@ PayPal 웹훅 시크릿은 웹훅의 무결성을 검증하기 위한 비밀키�
 2. **Webhooks** 메뉴로 이동
 3. 웹훅 목록에서 **웹훅 ID** 확인
    ```
-   예시: WH-2JR3241H2131242X
+   예시: 7K771721GD998503X
    ```
 
 #### **2. 웹훅 시크릿 확인**
@@ -37,7 +53,7 @@ PayPal 웹훅 시크릿은 웹훅의 무결성을 검증하기 위한 비밀키�
 #### **웹훅 ID 사용**
 ```python
 # 웹훅 관리용 (삭제, 수정 등)
-webhook_id = "WH-2JR3241H2131242X"
+webhook_id = "7K771721GD998503X"
 
 # PayPal SDK에서 웹훅 삭제
 paypalrestsdk.Webhook.delete(webhook_id)
@@ -68,7 +84,7 @@ def verify_webhook_signature(payload, headers):
 #### **1.3 웹훅 생성**
 1. **Webhooks** 메뉴로 이동
 2. **Add Webhook** 클릭
-3. **Webhook URL** 설정: `https://your-domain.com/api/webhooks/paypal`
+3. **Webhook URL** 설정: `https://192.168.75.39/api/webhooks/paypal`
 4. **Event Types** 선택:
    - `PAYMENT.CAPTURE.COMPLETED`
    - `PAYMENT.CAPTURE.DENIED`
@@ -87,9 +103,10 @@ def verify_webhook_signature(payload, headers):
 ```bash
 # backend/.env 파일 생성
 PAYPAL_WEBHOOK_SECRET=your-actual-webhook-secret-from-paypal
-PAYPAL_WEBHOOK_ID=your-actual-webhook-id-from-paypal
-PAYPAL_CLIENT_ID=your-paypal-client-id
-PAYPAL_CLIENT_SECRET=your-paypal-client-secret
+PAYPAL_WEBHOOK_ID=7K771721GD998503X
+PAYPAL_WEBHOOK_URL=https://192.168.75.39/api/webhooks/paypal
+PAYPAL_CLIENT_ID=AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+PAYPAL_CLIENT_SECRET=EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC
 FLASK_ENV=development
 ```
 
@@ -97,9 +114,10 @@ FLASK_ENV=development
 ```bash
 # 서버에서 환경 변수 설정
 export PAYPAL_WEBHOOK_SECRET=your-actual-webhook-secret-from-paypal
-export PAYPAL_WEBHOOK_ID=your-actual-webhook-id-from-paypal
-export PAYPAL_CLIENT_ID=your-paypal-client-id
-export PAYPAL_CLIENT_SECRET=your-paypal-client-secret
+export PAYPAL_WEBHOOK_ID=7K771721GD998503X
+export PAYPAL_WEBHOOK_URL=https://192.168.75.39/api/webhooks/paypal
+export PAYPAL_CLIENT_ID=AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+export PAYPAL_CLIENT_SECRET=EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC
 export FLASK_ENV=production
 ```
 
@@ -110,9 +128,10 @@ services:
   backend:
     environment:
       - PAYPAL_WEBHOOK_SECRET=your-actual-webhook-secret-from-paypal
-      - PAYPAL_WEBHOOK_ID=your-actual-webhook-id-from-paypal
-      - PAYPAL_CLIENT_ID=your-paypal-client-id
-      - PAYPAL_CLIENT_SECRET=your-paypal-client-secret
+      - PAYPAL_WEBHOOK_ID=7K771721GD998503X
+      - PAYPAL_WEBHOOK_URL=https://192.168.75.39/api/webhooks/paypal
+      - PAYPAL_CLIENT_ID=AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+      - PAYPAL_CLIENT_SECRET=EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC
       - FLASK_ENV=production
 ```
 
@@ -132,10 +151,23 @@ def verify_webhook_signature(payload, headers):
         transmission_sig = headers.get('PAYPAL-TRANSMISSION-SIG')
         transmission_time = headers.get('PAYPAL-TRANSMISSION-TIME')
         
-        # 실제 환경에서는 PayPal SDK를 사용하여 서명 검증
+        print(f"🔐 웹훅 서명 검증 시작")
+        print(f"   - AUTH_ALGO: {auth_algo}")
+        print(f"   - CERT_URL: {cert_url}")
+        print(f"   - TRANSMISSION_ID: {transmission_id}")
+        print(f"   - TRANSMISSION_TIME: {transmission_time}")
+        
+        # 실제 환경에서는 PayPal의 공개키를 사용하여 서명 검증
+        # 여기서는 간단한 검증만 수행
+        if not all([auth_algo, cert_url, transmission_id, transmission_sig, transmission_time]):
+            print("❌ 필수 웹훅 헤더가 누락됨")
+            return False
+            
+        # 실제 구현에서는 PayPal SDK를 사용하여 서명 검증
         # return paypal.verify_webhook_signature(payload, headers)
         
-        # 개발 환경에서는 기본 검증만 수행
+        # 개발 환경에서는 항상 True 반환
+        print("✅ 웹훅 서명 검증 성공 (개발 모드)")
         return True
         
     except Exception as e:
@@ -143,7 +175,7 @@ def verify_webhook_signature(payload, headers):
         return False
 ```
 
-#### **3.2 실제 프로덕션 검증 (PayPal SDK 사용)**
+#### **3.2 PayPal SDK를 사용한 실제 검증**
 ```python
 import paypalrestsdk
 
@@ -203,7 +235,8 @@ secrets/
 ```bash
 # 프로덕션에서는 반드시 실제 시크릿 사용
 export PAYPAL_WEBHOOK_SECRET=WH-2JR3241H2131242X-1234567890123456
-export PAYPAL_WEBHOOK_ID=WH-2JR3241H2131242X
+export PAYPAL_WEBHOOK_ID=7K771721GD998503X
+export PAYPAL_WEBHOOK_URL=https://192.168.75.39/api/webhooks/paypal
 export FLASK_ENV=production
 ```
 
@@ -212,62 +245,51 @@ export FLASK_ENV=production
 ### **1. 개발 환경 테스트**
 ```bash
 # 개발 환경에서는 기본 시크릿 사용
+export PAYPAL_WEBHOOK_ID=7K771721GD998503X
+export PAYPAL_WEBHOOK_URL=https://192.168.75.39/api/webhooks/paypal
 export FLASK_ENV=development
-# PAYPAL_WEBHOOK_SECRET이 설정되지 않으면 자동으로 기본값 사용
 ```
 
-### **2. 웹훅 테스트**
+### **2. 웹훅 시뮬레이션**
 ```bash
-# 웹훅 테스트 실행
-curl -X POST http://localhost:5000/api/webhooks/test
+# 웹훅 시뮬레이션 엔드포인트 테스트
+curl -X POST http://localhost:5000/api/webhooks/simulate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "event_type": "PAYMENT.CAPTURE.COMPLETED",
+    "id": "WH-TEST-1234567890",
+    "resource": {
+      "id": "2GG3456789012345",
+      "status": "COMPLETED",
+      "amount": {
+        "currency_code": "USD",
+        "value": "75.00"
+      }
+    }
+  }'
 ```
 
-### **3. PayPal 웹훅 시뮬레이터**
-1. PayPal Developer Dashboard 접속
-2. Webhooks > Simulate Event 선택
-3. 이벤트 타입 선택
-4. 테스트 실행
-
-## 🚨 문제 해결
-
-### **1. 시크릿이 설정되지 않은 경우**
-```
-❌ PAYPAL_WEBHOOK_SECRET 환경 변수가 설정되지 않았습니다.
-   프로덕션 환경에서는 반드시 환경 변수를 설정하세요.
-```
-
-**해결 방법:**
+### **3. 로그 확인**
 ```bash
-export PAYPAL_WEBHOOK_SECRET=your-actual-webhook-secret
+# 웹훅 처리 로그 확인
+tail -f logs/webhook.log
 ```
 
-### **2. 웹훅 서명 검증 실패**
-```
-❌ 웹훅 서명 검증 실패
-```
+## 📞 문제 해결
 
-**해결 방법:**
-1. PayPal Developer Dashboard에서 웹훅 시크릿 확인
-2. 환경 변수가 올바르게 설정되었는지 확인
-3. 웹훅 URL이 올바른지 확인
+### **1. 웹훅 수신 안됨**
+- URL 확인: `https://192.168.75.39/api/webhooks/paypal`
+- HTTPS 인증서 유효성 확인
+- 방화벽 설정 확인
 
-### **3. 개발 환경에서 기본값 사용**
-```
-⚠️ 개발 환경에서 기본 웹훅 시크릿을 사용합니다. 프로덕션에서는 환경 변수를 설정하세요.
-```
+### **2. 서명 검증 실패**
+- 웹훅 시크릿 확인
+- PayPal 공개키 확인
+- 시간 동기화 확인
 
-**이는 정상적인 동작입니다.** 개발 환경에서는 기본값을 사용하고, 프로덕션에서는 실제 시크릿을 사용합니다.
-
-## 📋 체크리스트
-
-- [ ] PayPal Developer Dashboard에서 웹훅 생성
-- [ ] 웹훅 ID 복사
-- [ ] 웹훅 시크릿 복사
-- [ ] 환경 변수 설정 (.env 파일 또는 시스템 환경 변수)
-- [ ] .gitignore에 .env 파일 추가
-- [ ] 프로덕션 환경에서 실제 시크릿 사용
-- [ ] 웹훅 테스트 실행
-- [ ] 서명 검증 테스트
+### **3. 중복 이벤트**
+- 이벤트 ID 기반 중복 체크
+- 데이터베이스 인덱스 설정
 
 ## 🔗 유용한 링크
 

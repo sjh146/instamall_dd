@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  # Redis 캐시 (개발용)
+  redis:
+    image: instead-redis:latest
+    container_name: instagram-redis-dev
+    command: redis-server --appendonly yes --requirepass redis_password --bind 0.0.0.0 --protected-mode yes
+    volumes:
+      - redis_data_dev:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Flask 백엔드 (개발용 - Gunicorn 사용)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.dev
+    container_name: instagram-backend-dev
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # 로컬(호스트) Postgres에 연결
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=instagram_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC}
+      - PAYPAL_WEBHOOK_SECRET=${PAYPAL_WEBHOOK_SECRET:-dev-webhook-secret-12345}
+      - PAYPAL_WEBHOOK_ID=${PAYPAL_WEBHOOK_ID:-7K771721GD998503X}
+      - FLASK_ENV=development
+      - TZ=Asia/Seoul
+    volumes:
+      - ./backend:/app
+      - backend_logs_dev:/app/logs
+      - backend_uploads_dev:/app/uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # React 프론트엔드 (개발용)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - REACT_APP_API_URL=http://backend:5000
+        - REACT_APP_PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-test}
+        - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost:5000}
+        - REACT_APP_BACKEND_PORT=${REACT_APP_BACKEND_PORT:-5000}
+        - NODE_ENV=development
+    container_name: instagram-frontend-dev
+    environment:
+      - REACT_APP_API_URL=http://backend:5000
+      - REACT_APP_PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-test}
+      - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost:5000}
+      - REACT_APP_BACKEND_PORT=${REACT_APP_BACKEND_PORT:-5000}
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  redis_data_dev:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/redis-dev
+  backend_logs_dev:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./logs/backend-dev
+  backend_uploads_dev:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./uploads/backend-dev
+
+networks:
+  app-network-dev:
+    driver: bridge
+    labels:
+      - "com.instagram.network.type=app-dev"

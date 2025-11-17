@@ -1,44 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL 데이터베이스
-  postgres:
-    image: instead-postgres:latest
-    container_name: instagram-postgres
-    environment:
-      POSTGRES_DB: instagram_db
-      POSTGRES_USER: instagram_user
-      POSTGRES_PASSWORD: instagram_password
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
-      POSTGRES_HOST_AUTH_METHOD: "md5"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
-    # 외부 포트 노출 (직접 접속용)
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
-    networks:
-      - app-network
-    security_opt:
-      - no-new-privileges:true
-    read_only: false
-    tmpfs:
-      - /tmp
-      - /var/run/postgresql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U instagram_user -d instagram_db"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
-
   # Redis 캐시 (선택사항)
   redis:
     image: instead-redis:latest
@@ -79,26 +41,25 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - DB_HOST=postgres
+      # 로컬(호스트) Postgres에 연결
+      - DB_HOST=host.docker.internal
       - DB_PORT=5432
-      - DB_USERNAME=instagram_user
-      - DB_PASSWORD=instagram_password
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_NAME=instagram_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - PAYPAL_CLIENT_ID=AYclIN8z4NgfjpWr7HIUOAip4fOM69wFvd9BKw7g1GFCkfnZcRwHaNGqQl2M0f8286oQRmUCK1qhp82k
-      - PAYPAL_CLIENT_SECRET=ENMSCRX03HWGc1BHqLUOfngB_IoIpBffyvJ2YwnmBuxjd3jpN7UCJJGE0FkoEi2GpLecNCfr5LUhJab3
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC}
       - PAYPAL_WEBHOOK_SECRET=${PAYPAL_WEBHOOK_SECRET:-dev-webhook-secret-12345}
-      - PAYPAL_WEBHOOK_ID=${PAYPAL_WEBHOOK_ID:-WH-DEV-1234567890}
-      - FLASK_ENV=development
+      - PAYPAL_WEBHOOK_ID=${PAYPAL_WEBHOOK_ID:-7K771721GD998503X}
+      - FLASK_ENV=production
       - TZ=Asia/Seoul
     volumes:
       - ./backend:/app
       - backend_logs:/app/logs
       - backend_uploads:/app/uploads
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -121,10 +82,37 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - REACT_APP_API_URL=http://backend:5000
+        - REACT_APP_PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7}
+        - REACT_APP_PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC}
+        - REACT_APP_PAYPAL_ENVIRONMENT=${PAYPAL_ENVIRONMENT:-live}
+        - REACT_APP_PAYPAL_CONTAINER_ID=${PAYPAL_CONTAINER_ID:-paypal-button-container}
+        - REACT_APP_PAYPAL_CURRENCY=${PAYPAL_CURRENCY:-USD}
+        - REACT_APP_PAYPAL_HOSTED_BUTTON_ID=${PAYPAL_HOSTED_BUTTON_ID:-7GXDQRX358EJC}
+        - REACT_APP_PRODUCT_NAME=${PRODUCT_NAME:-MINI high-end camera}
+        - REACT_APP_PRODUCT_DESCRIPTION=${PRODUCT_DESCRIPTION:-The ultimate camera for pros — unmatched precision, instant response.}
+        - REACT_APP_PRODUCT_PRICE=${PRODUCT_PRICE:-1.00}
+        - REACT_APP_PRODUCT_KRW_PRICE=${PRODUCT_KRW_PRICE:-1,000원}
+        - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost:5000}
+        - REACT_APP_BACKEND_PORT=${REACT_APP_BACKEND_PORT:-5000}
+        - NODE_ENV=production
     container_name: instagram-frontend
     environment:
       - REACT_APP_API_URL=http://backend:5000
-      - NODE_ENV=development
+      - REACT_APP_PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7}
+      - REACT_APP_PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC}
+      - REACT_APP_PAYPAL_ENVIRONMENT=${PAYPAL_ENVIRONMENT:-live}
+      - REACT_APP_PAYPAL_CONTAINER_ID=${PAYPAL_CONTAINER_ID:-paypal-button-container}
+      - REACT_APP_PAYPAL_CURRENCY=${PAYPAL_CURRENCY:-USD}
+      - REACT_APP_PAYPAL_HOSTED_BUTTON_ID=${PAYPAL_HOSTED_BUTTON_ID:-7GXDQRX358EJC}
+      - REACT_APP_PRODUCT_NAME=${PRODUCT_NAME:-MINI high-end camera}
+      - REACT_APP_PRODUCT_DESCRIPTION=${PRODUCT_DESCRIPTION:-The ultimate camera for pros — unmatched precision, instant response.}
+      - REACT_APP_PRODUCT_PRICE=${PRODUCT_PRICE:-1.00}
+      - REACT_APP_PRODUCT_KRW_PRICE=${PRODUCT_KRW_PRICE:-1,000원}
+      - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost:5000}
+      - REACT_APP_BACKEND_PORT=${REACT_APP_BACKEND_PORT:-5000}
+      - NODE_ENV=production
     # 외부 포트 노출 (직접 접속용)
     ports:
       - "3000:3000"
@@ -152,12 +140,6 @@ services:
           memory: 256M
 
 volumes:
-  postgres_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./data/postgres
   redis_data:
     driver: local
     driver_opts:

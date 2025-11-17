@@ -9,7 +9,7 @@ import json
 import hmac
 import hashlib
 import pytz
-
+from dotenv import load_dotenv
 app = Flask(__name__)
 
 # Flask Secret Key 설정 (세션 및 CSRF 보호용)
@@ -41,6 +41,23 @@ from config import Config
 app.config.from_object(Config)
 
 db = SQLAlchemy(app)
+
+# SQLAlchemy 세션 관리 개선
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    try:
+        db.session.remove()
+    except Exception as e:
+        print(f"Session cleanup error: {e}")
+
+@app.teardown_request
+def teardown_request(exception=None):
+    try:
+        if exception:
+            db.session.rollback()
+        db.session.remove()
+    except Exception as e:
+        print(f"Request teardown error: {e}")
 
 # 한국 시간대 설정
 KST = pytz.timezone('Asia/Seoul')
@@ -127,22 +144,16 @@ class Order(db.Model):
         }
 
 # PayPal 웹훅 시크릿 (실제 환경에서는 환경 변수로 관리)
-PAYPAL_WEBHOOK_SECRET = os.environ.get('PAYPAL_WEBHOOK_SECRET')
-
+#PAYPAL_WEBHOOK_SECRET = os.environ.get('PAYPAL_WEBHOOK_SECRET')
+load_dotenv() 
 # PayPal 웹훅 ID (웹훅 관리용)
 PAYPAL_WEBHOOK_ID = os.environ.get('PAYPAL_WEBHOOK_ID')
 
 # 개발 환경에서만 기본값 사용
-if not PAYPAL_WEBHOOK_SECRET and os.environ.get('FLASK_ENV') == 'development':
-    PAYPAL_WEBHOOK_SECRET = 'dev-webhook-secret-12345'
-    print("⚠️ 개발 환경에서 기본 웹훅 시크릿을 사용합니다. 프로덕션에서는 환경 변수를 설정하세요.")
-elif not PAYPAL_WEBHOOK_SECRET:
-    print("❌ PAYPAL_WEBHOOK_SECRET 환경 변수가 설정되지 않았습니다.")
-    print("   프로덕션 환경에서는 반드시 환경 변수를 설정하세요.")
-    PAYPAL_WEBHOOK_SECRET = None
+
 
 if not PAYPAL_WEBHOOK_ID and os.environ.get('FLASK_ENV') == 'development':
-    PAYPAL_WEBHOOK_ID = 'WH-DEV-1234567890'
+    
     print("⚠️ 개발 환경에서 기본 웹훅 ID를 사용합니다. 프로덕션에서는 환경 변수를 설정하세요.")
 elif not PAYPAL_WEBHOOK_ID:
     print("ℹ️ PAYPAL_WEBHOOK_ID 환경 변수가 설정되지 않았습니다.")
@@ -938,13 +949,24 @@ def admin_page():
 def create_order():
     try:
         data = request.json
+        print(f"📝 주문 생성 요청 수신: {data}")
         
-        # PayPal 주문 정보에서 데이터 추출
+
+        
+        # PayPal 주문 정보에서 데이터 추출 (기존 로직)
         paypal_order = data.get('paypal_order', {})
+        if not paypal_order:
+            return jsonify({
+                'success': False,
+                'message': 'PayPal 주문 정보가 필요합니다.'
+            }), 400
+            
         payer = paypal_order.get('payer', {})
         purchase_units = paypal_order.get('purchase_units', [{}])[0]
         shipping = purchase_units.get('shipping', {})
         address = shipping.get('address', {})
+        
+        print(f"💰 PayPal 주문 처리: {paypal_order.get('id')}")
         
         # 새 주문 생성
         new_order = Order(
@@ -971,6 +993,8 @@ def create_order():
         db.session.add(new_order)
         db.session.commit()
         
+        print(f"✅ PayPal 주문 생성 완료: {paypal_order.get('id')}")
+        
         return jsonify({
             'success': True,
             'message': '주문이 성공적으로 저장되었습니다.',
@@ -979,6 +1003,7 @@ def create_order():
         
     except Exception as e:
         db.session.rollback()
+        print(f"❌ 주문 생성 오류: {str(e)}")
         return jsonify({
             'success': False,
             'message': f'주문 저장 중 오류가 발생했습니다: {str(e)}'
@@ -1123,4 +1148,10 @@ def update_order_status(order_id):
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    # 개발 환경에서만 Flask 개발 서버 실행
+    # 프로덕션에서는 Gunicorn 사용
+    if os.environ.get('FLASK_ENV') == 'development':
+        app.run(debug=True, host='0.0.0.0', port=5000)
+    else:
+        # 프로덕션 환경에서는 Gunicorn이 실행하므로 여기서는 아무것도 하지 않음
+        pass 

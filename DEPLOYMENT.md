@@ -25,7 +25,7 @@ cp frontend/env.example frontend/.env
 
 ```env
 # PayPal 설정 (실제 PayPal Client ID로 교체)
-REACT_APP_PAYPAL_CLIENT_ID=your_actual_paypal_client_id
+REACT_APP_PAYPAL_CLIENT_ID=AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
 
 # 백엔드 설정 (실제 서버 IP/도메인으로 교체)
 REACT_APP_BACKEND_URL=http://your-server-ip:5000
@@ -204,7 +204,7 @@ server {
 ```bash
 # 프로덕션 환경 변수
 export NODE_ENV=production
-export REACT_APP_PAYPAL_CLIENT_ID=your_production_paypal_client_id
+export REACT_APP_PAYPAL_CLIENT_ID=AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
 export REACT_APP_BACKEND_URL=https://your-domain.com
 ```
 

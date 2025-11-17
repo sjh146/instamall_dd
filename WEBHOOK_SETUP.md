@@ -10,6 +10,32 @@ PayPal 웹훅은 결제 상태 변경, 주문 완료, 환불 등의 이벤트가
 - ✅ **신뢰성**: PayPal에서 보장하는 안정적인 전송
 - ✅ **보안**: 서명 검증으로 무결성 보장
 
+## 📋 현재 웹훅 설정
+
+### **웹훅 정보**
+```
+Webhook URL: https://192.168.75.39/api/webhooks/paypal
+Webhook ID: 7K771721GD998503X
+Events Tracked: All Events
+```
+
+### **PayPal 계정 정보**
+```
+App Name: dduckbeagy
+Client ID: AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+Secret Key: EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC
+```
+
+### **환경 변수 설정**
+```bash
+# backend/.env 파일
+PAYPAL_CLIENT_ID=AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+PAYPAL_CLIENT_SECRET=EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC
+PAYPAL_WEBHOOK_ID=7K771721GD998503X
+PAYPAL_WEBHOOK_URL=https://192.168.75.39/api/webhooks/paypal
+PAYPAL_WEBHOOK_SECRET=your-paypal-webhook-secret-here
+```
+
 ## 📋 주요 웹훅 이벤트
 
 ### **결제 관련 이벤트**
@@ -57,7 +83,7 @@ PayPal 웹훅은 결제 상태 변경, 주문 완료, 환불 등의 이벤트가
 
 #### **2.1 웹훅 URL 설정**
 ```
-https://your-domain.com/api/webhooks/paypal
+https://192.168.75.39/api/webhooks/paypal
 ```
 
 #### **2.2 이벤트 선택**
@@ -165,8 +191,8 @@ def handle_payment_refunded(resource):
     refund_amount = resource.get('amount', {}).get('value')
     
     # 주문 상태 업데이트
-    # 환불 이메일 발송
-    # 재고 복원
+    # 환불 처리
+    # 고객에게 알림
 ```
 
 ## 📊 웹훅 모니터링
@@ -272,7 +298,7 @@ https://your-ngrok-url.ngrok.io/api/webhooks/paypal
 ## 🚨 문제 해결
 
 ### **1. 웹훅 수신 안됨**
-- URL이 올바른지 확인
+- URL이 올바른지 확인: `https://192.168.75.39/api/webhooks/paypal`
 - HTTPS 사용 여부 확인
 - 방화벽 설정 확인
 

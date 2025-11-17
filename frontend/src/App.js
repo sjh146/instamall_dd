@@ -1,36 +1,48 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+import PAYPAL_CONFIG from './config/paypal';
 
 // 상품 정보를 객체로 관리합니다.
 const product = {
-  name: "MINI high-end camera",
-  description: "The ultimate camera for pros — unmatched precision, instant response.",
-  price: "75.00", // PayPal은 USD와 같은 통화를 사용하므로, 문자열로 가격을 전달합니다.
-  krw_price: "90,000원",
-  imageUrl: "/S7e8223771d9643b290de7b81268d8d4dd.jpg_220x220q75.jpg_.avif", // public 폴더 기준
-  videoUrl: "/output_fixed.mp4" // public 폴더 기준
+  name: PAYPAL_CONFIG.PRODUCT.NAME,
+  description: PAYPAL_CONFIG.PRODUCT.DESCRIPTION,
+  price: PAYPAL_CONFIG.PRODUCT.PRICE,
+  krw_price: PAYPAL_CONFIG.PRODUCT.KRW_PRICE,
+  imageUrl: "/S7e8223771d9643b290de7b81268d8d4dd.jpg_220x220q75.jpg_.avif",
+  videoUrl: "/output_fixed.mp4"
 };
 
-// PayPal Client ID - 환경 변수에서 가져오거나 기본값 사용
-const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || "AYclIN8z4NgfjpWr7HIUOAip4fOM69wFvd9BKw7g1GFCkfnZcRwHaNGqQl2M0f8286oQRmUCK1qhp82k";
+// PayPal 설정 검증
+if (!PAYPAL_CONFIG.isValid()) {
+  console.error('❌ PayPal 설정이 올바르지 않습니다.');
+  console.error('   frontend/.env 파일을 확인해주세요.');
+}
 
 // 배포 환경에 따른 백엔드 URL 설정
 const getBackendUrl = () => {
-  // 환경 변수에서 백엔드 URL 가져오기
+  console.log('🔍 백엔드 URL 결정 중...');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
+  
+  // 개발 환경에서는 항상 localhost 사용
+  if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+    console.log('✅ 개발 환경 감지 - localhost 사용');
+    return 'http://localhost:5000';
+  }
+  
+  // 환경 변수에서 백엔드 URL 가져오기 (프로덕션에서만)
   if (process.env.REACT_APP_BACKEND_URL) {
+    console.log('✅ 환경 변수 REACT_APP_BACKEND_URL 사용:', process.env.REACT_APP_BACKEND_URL);
     return process.env.REACT_APP_BACKEND_URL;
   }
   
   // 프로덕션 환경에서는 현재 호스트의 백엔드 포트 사용
-  if (process.env.NODE_ENV === 'production') {
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const port = process.env.REACT_APP_BACKEND_PORT || '5000';
-    return `${protocol}//${hostname}:${port}`;
-  }
-  
-  // 개발 환경에서는 localhost 사용
-  return 'http://localhost:5000';
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = process.env.REACT_APP_BACKEND_PORT || '5000';
+  const url = `${protocol}//${hostname}:${port}`;
+  console.log('✅ 현재 호스트 기반 URL 생성:', url);
+  return url;
 };
 
 function App() {
@@ -39,8 +51,16 @@ function App() {
   const [isLiked, setIsLiked] = useState(false);
   const [backendUrl, setBackendUrl] = useState(getBackendUrl());
   const [isLoading, setIsLoading] = useState(true);
-  const [paypalLoaded, setPaypalLoaded] = useState(false);
-  const paypalContainerRef = useRef(null);
+  const [paymentStatus, setPaymentStatus] = useState('ready');
+
+  // 결제 금액 포맷터 (PayPal 요구사항에 맞춘 2자리 소수점 문자열)
+  const formatPaypalAmount = (value) => {
+    if (value == null) return '0.00';
+    const numeric = String(value).replace(/[^0-9.]/g, '');
+    const amount = Number(numeric);
+    if (!isFinite(amount)) return '0.00';
+    return amount.toFixed(2);
+  };
 
   // 모바일 감지 함수
   const checkMobile = () => {
@@ -50,187 +70,13 @@ function App() {
     setIsMobile(isMobileDevice);
   };
 
-  // PayPal SDK 로드
-  const loadPayPalSDK = () => {
-    if (window.paypal) {
-      console.log('✅ PayPal SDK 이미 로드됨');
-      setPaypalLoaded(true);
-      return;
-    }
-
-    console.log('🔄 PayPal SDK 로드 시작');
-    const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
-    script.async = true;
-    
-    script.onload = () => {
-      console.log('✅ PayPal SDK 로드 완료');
-      setPaypalLoaded(true);
-    };
-    
-    script.onerror = () => {
-      console.error('❌ PayPal SDK 로드 실패');
-      setPaypalLoaded(false);
-    };
-    
-    document.head.appendChild(script);
-  };
-
-  // PayPal 버튼 초기화
-  const initializePayPalButtons = () => {
-    if (!window.paypal || !paypalContainerRef.current) {
-      console.log('PayPal SDK 또는 컨테이너가 준비되지 않음');
-      return;
-    }
-
-    console.log('🔄 PayPal 버튼 초기화 시작');
-    
-    // 컨테이너 내용 초기화
-    paypalContainerRef.current.innerHTML = '';
-
-    try {
-      const buttons = window.paypal.Buttons({
-        style: {
-          layout: 'vertical',
-          color: 'gold',
-          shape: 'rect',
-          label: 'paypal'
-        },
-        createOrder: (data, actions) => {
-          console.log("PayPal createOrder 호출됨");
-          return actions.order.create({
-            purchase_units: [
-              {
-                description: product.name,
-                amount: {
-                  value: product.price,
-                  currency_code: "USD"
-                }
-              }
-            ],
-            application_context: {
-              shipping_preference: "NO_SHIPPING"
-            }
-          });
-        },
-        onApprove: async (data, actions) => {
-          console.log("PayPal onApprove 호출됨", data);
-          try {
-            const order = await actions.order.capture();
-            console.log("PayPal 결제 완료:", order);
-            await handlePayPalPayment(order);
-          } catch (error) {
-            console.error('PayPal 결제 처리 중 오류:', error);
-            alert(`PayPal 결제 처리 중 오류가 발생했습니다: ${error.message}`);
-          }
-        },
-        onError: (err) => {
-          console.error("PayPal 에러:", err);
-          alert("PayPal 결제 중 오류가 발생했습니다. 다시 시도해주세요.");
-        },
-        onCancel: (data) => {
-          console.log("PayPal 결제 취소:", data);
-          alert("PayPal 결제가 취소되었습니다.");
-        }
-      });
-
-      if (buttons.isEligible()) {
-        buttons.render(paypalContainerRef.current);
-        console.log('✅ PayPal 버튼 렌더링 완료');
-      } else {
-        console.warn('⚠️ PayPal 버튼이 지원되지 않는 환경입니다');
-        paypalContainerRef.current.innerHTML = `
-          <div style="padding: 16px; background-color: rgba(255, 255, 0, 0.1); border-radius: 8px; text-align: center; color: #ffff00;">
-            <div>⚠️ PayPal이 지원되지 않는 환경입니다</div>
-            <div style="margin-top: 8px; font-size: 12px;">다른 브라우저나 기기에서 시도해주세요</div>
-          </div>
-        `;
-      }
-    } catch (error) {
-      console.error('❌ PayPal 버튼 초기화 실패:', error);
-      paypalContainerRef.current.innerHTML = `
-        <div style="padding: 16px; background-color: rgba(255, 0, 0, 0.1); border-radius: 8px; text-align: center; color: #ff0000;">
-          <div>❌ PayPal 초기화 실패</div>
-          <div style="margin-top: 8px; font-size: 12px;">${error.message}</div>
-        </div>
-      `;
-    }
-  };
-
-  // 전역 에러 핸들러
-  useEffect(() => {
-    const handleError = (event) => {
-      console.error('🚨 전역 에러 발생:', event.error);
-      
-      // PayPal 관련 에러인지 확인
-      if (event.error && event.error.message && 
-          (event.error.message.includes('paypal') || 
-           event.error.message.includes('PayPal') ||
-           event.error.stack && event.error.stack.includes('paypal'))) {
-        console.log('PayPal 관련 에러 감지, 재시도 준비');
-        setPaypalLoaded(false);
-        
-        // 3초 후 재시도
-        setTimeout(() => {
-          console.log('🔄 PayPal 재시도 시작');
-          loadPayPalSDK();
-        }, 3000);
-      }
-    };
-
-    const handleUnhandledRejection = (event) => {
-      console.error('🚨 처리되지 않은 Promise 거부:', event.reason);
-      
-      // PayPal 관련 Promise 거부인지 확인
-      if (event.reason && event.reason.message && 
-          event.reason.message.includes('paypal')) {
-        console.log('PayPal Promise 거부 감지');
-        setPaypalLoaded(false);
-      }
-    };
-
-    window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-
-    return () => {
-      window.removeEventListener('error', handleError);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
-  }, []);
-
-  // 컴포넌트 마운트 시 초기화
-  useEffect(() => {
-    console.log('🔄 컴포넌트 초기화 시작');
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    // 백엔드 연결 테스트
-    testBackendConnection();
-    
-    // PayPal SDK 로드
-    loadPayPalSDK();
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, []);
-
-  // PayPal SDK 로드 완료 시 버튼 초기화
-  useEffect(() => {
-    if (paypalLoaded && paypalContainerRef.current) {
-      console.log('🔄 PayPal SDK 로드 완료, 버튼 초기화 시작');
-      initializePayPalButtons();
-    }
-  }, [paypalLoaded]);
-
   // 백엔드 연결 테스트
   const testBackendConnection = async () => {
     try {
       console.log('백엔드 연결 테스트 시작:', backendUrl);
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       
       const response = await fetch(`${backendUrl}/health`, {
         method: 'GET',
@@ -250,7 +96,6 @@ function App() {
     } catch (error) {
       console.error('❌ 백엔드 연결 실패:', error);
       
-      // 백엔드 연결 실패 시 대체 URL 시도
       if (backendUrl.includes('localhost') || backendUrl.includes('127.0.0.1')) {
         const currentHost = window.location.hostname;
         const currentProtocol = window.location.protocol;
@@ -260,7 +105,6 @@ function App() {
           console.log('🔄 대체 백엔드 URL 시도:', fallbackUrl);
           setBackendUrl(fallbackUrl);
           
-          // 재시도
           setTimeout(() => {
             testBackendConnection();
           }, 1000);
@@ -268,57 +112,49 @@ function App() {
         }
       }
       
-      // 모든 시도 실패 시 사용자에게 알림
       console.error('모든 백엔드 연결 시도 실패');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // PayPal 결제 처리 개선
-  const handlePayPalPayment = async (order) => {
-    try {
-      console.log('PayPal 결제 처리 시작:', order);
-      console.log('백엔드 URL:', backendUrl);
-      
-      const response = await fetch(`${backendUrl}/api/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          paypal_order: order,
-          product_name: product.name
-        })
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-      
-      const result = await response.json();
-      console.log("✅ 백엔드 응답:", result);
-      
-      if (result.success) {
-        alert(`🎉 PayPal 결제 완료! ${order.payer.name.given_name}님!\n주문이 성공적으로 저장되었습니다.\n주문 ID: ${order.id}`);
-      } else {
-        alert(`PayPal 결제는 완료되었지만 주문 저장 중 오류가 발생했습니다: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('❌ PayPal 결제 처리 중 오류:', error);
-      console.error('백엔드 URL:', backendUrl);
-      
-      // 네트워크 오류인 경우 사용자에게 안내
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        alert(`🌐 네트워크 연결 오류입니다.\n\n백엔드 서버가 실행 중인지 확인해주세요.\n백엔드 URL: ${backendUrl}\n\n다른 기기에서 접속하는 경우:\n1. 서버 IP 주소 확인\n2. 방화벽 설정 확인\n3. 포트 5000이 열려있는지 확인`);
-      } else if (error.name === 'AbortError') {
-        alert(`⏰ 요청 시간 초과입니다.\n\n네트워크 연결을 확인하고 다시 시도해주세요.\n백엔드 URL: ${backendUrl}`);
-      } else {
-        alert(`❌ PayPal 결제 처리 중 오류가 발생했습니다:\n${error.message}\n\n백엔드 URL: ${backendUrl}`);
-      }
-    }
-  };
+  // 전역 에러 핸들러
+  useEffect(() => {
+    const handleError = (event) => {
+      console.error('🚨 전역 에러 발생:', event.error);
+    };
+
+    const handleUnhandledRejection = (event) => {
+      console.error('🚨 처리되지 않은 Promise 거부:', event.reason);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  // 컴포넌트 마운트 시 초기화
+  useEffect(() => {
+    console.log('🔄 컴포넌트 초기화 시작');
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    testBackendConnection();
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
+  // PayPal 버튼 초기화 (새로운 단일 버튼)
+  useEffect(() => {
+    console.log('🔄 새로운 PayPal 단일 버튼 초기화');
+  }, []);
 
   const handleVideoClick = () => {
     setIsVideoPlaying(true);
@@ -335,77 +171,16 @@ function App() {
   // 로딩 중 표시
   if (isLoading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#000000',
-        color: '#ffffff',
-        fontSize: '18px'
-      }}>
+      <div className="loading-container">
         <div>
-          <div style={{ marginBottom: '20px' }}>로딩 중...</div>
-          <div style={{ fontSize: '14px', color: '#888' }}>
+          <div className="loading-text">로딩 중...</div>
+          <div className="loading-subtext">
             백엔드 연결 확인 중: {backendUrl}
           </div>
         </div>
       </div>
     );
   }
-
-  // 결제 처리 함수
-  const handlePayment = async () => {
-    console.log("결제 버튼 클릭됨");
-    console.log("백엔드 URL:", backendUrl);
-    
-    try {
-      // PayPal 결제 시뮬레이션
-      const mockOrder = {
-        id: "PAY-" + Date.now(),
-        status: "COMPLETED",
-        payer: {
-          name: {
-            given_name: "테스트",
-            surname: "사용자"
-          },
-          email_address: "test@example.com"
-        },
-        purchase_units: [{
-          amount: {
-            value: product.price,
-            currency_code: "USD"
-          }
-        }]
-      };
-      
-      console.log("결제 주문:", mockOrder);
-      
-      const response = await fetch(`${backendUrl}/api/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          paypal_order: mockOrder,
-          product_name: product.name
-        })
-      });
-      
-      const result = await response.json();
-      console.log("백엔드 응답:", result);
-      
-      if (result.success) {
-        alert(`🎉 결제 완료! ${mockOrder.payer.name.given_name}님!\n주문이 성공적으로 저장되었습니다.\n주문 ID: ${mockOrder.id}`);
-      } else {
-        alert(`결제는 완료되었지만 주문 저장 중 오류가 발생했습니다: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('결제 처리 중 오류:', error);
-      console.error('백엔드 URL:', backendUrl);
-      alert(`결제 처리 중 오류가 발생했습니다: ${error.message}\n백엔드 URL: ${backendUrl}`);
-    }
-  };
 
   // 모바일 전용 컴포넌트
   const MobileView = () => (
@@ -439,7 +214,6 @@ function App() {
         </div>
       </div>
 
-      {/* 모바일 동영상/이미지 섹션 */}
       <div className="mobile-video-section">
         {isVideoPlaying ? (
           <video 
@@ -462,113 +236,63 @@ function App() {
         )}
       </div>
 
-      {/* 모바일 결제 섹션 */}
       <div className="mobile-payment-section">
         <div className="mobile-price-info">
           <span className="mobile-price">{product.krw_price}</span>
-          <span className="mobile-usd-price">(USD ${product.price})</span>
+          <span className="mobile-usd-price">({PAYPAL_CONFIG.CURRENCY} ${product.price})</span>
         </div>
         
-        {/* PayPal 결제 버튼 */}
-        <div className="mobile-paypal-container" ref={paypalContainerRef}>
-          {!paypalLoaded && (
-            <div className="paypal-loading">
-              PayPal 로딩 중...
-            </div>
-          )}
-        </div>
-        
-        {/* PayPal 로드 실패 시 대체 버튼 */}
-        {!paypalLoaded && (
-          <div style={{ 
-            marginTop: '16px', 
-            padding: '16px', 
-            backgroundColor: 'rgba(255, 255, 0, 0.1)', 
-            borderRadius: '8px',
-            textAlign: 'center',
-            color: '#ffff00',
-            fontSize: '14px'
-          }}>
-            <div style={{ marginBottom: '12px' }}>⚠️ PayPal 버튼을 로드할 수 없습니다</div>
+        <div className="paypal-payment-section">
+          <div className="paypal-title">
+            💳 PayPal 결제
+          </div>
+          <div className="paypal-subtitle">바로 구매</div>
+          <div className="paypal-note">아래 버튼으로 결제하세요.</div>
+          
+          <div className="paypal-single-button-container">
             <button 
+              className="pp-8W32WPWG2HFRU"
               onClick={() => {
-                console.log('PayPal SDK 재로드 시도');
-                setPaypalLoaded(false);
-                loadPayPalSDK();
-              }}
-              style={{
-                background: 'linear-gradient(135deg, #0070ba 0%, #1546a0 100%)',
-                border: 'none',
-                borderRadius: '8px',
-                color: 'white',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                margin: '8px'
+                window.open('https://www.paypal.com/ncp/payment/8W32WPWG2HFRU', '_blank');
               }}
             >
-              PayPal 다시 로드
+              바로 구매
             </button>
-            <div style={{ marginTop: '8px', fontSize: '12px' }}>
-              네트워크 연결을 확인하고 다시 시도해주세요
+            <div className="paypal-branding">
+              <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
+              <div className="paypal-provider">
+                제공: <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" />
+              </div>
             </div>
-          </div>
-        )}
-        
-        {/* PayPal 테스트 계정 정보 */}
-        <div style={{ 
-          marginTop: '20px', 
-          padding: '16px', 
-          backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-          borderRadius: '8px',
-          textAlign: 'center',
-          color: 'white',
-          fontSize: '12px'
-        }}>
-          <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>PayPal 샌드박스 테스트 계정:</div>
-          <div>이메일: sb-1234567890@business.example.com</div>
-          <div>비밀번호: 123456789</div>
-          <div style={{ marginTop: '8px', fontSize: '10px', color: '#ccc' }}>
-            * 실제 돈이 차감되지 않는 테스트 환경입니다
           </div>
         </div>
         
-        {/* 배포 정보 (개발 환경에서만 표시) */}
+        <div className="payment-info-section">
+          <div className="payment-info-title">💳 결제 시스템</div>
+          <div>안전한 결제가 진행됩니다</div>
+          <div className="payment-info-note">
+            * 실제 결제가 진행되는 환경입니다
+          </div>
+        </div>
+        
         {process.env.NODE_ENV === 'development' && (
-          <div style={{ 
-            marginTop: '10px', 
-            padding: '8px', 
-            backgroundColor: 'rgba(0, 255, 0, 0.1)', 
-            borderRadius: '4px',
-            textAlign: 'center',
-            color: '#00ff00',
-            fontSize: '10px'
-          }}>
+          <div className="dev-mode-info">
             <div>개발 모드</div>
             <div>백엔드 URL: {backendUrl}</div>
-            <div>PayPal Client ID: {PAYPAL_CLIENT_ID.substring(0, 10)}...</div>
+            <div>PayPal 환경: {PAYPAL_CONFIG.getEnvironmentDisplayName()}</div>
+            <div>PayPal Client ID: {PAYPAL_CONFIG.CLIENT_ID ? PAYPAL_CONFIG.CLIENT_ID.substring(0, 10) + '...' : '설정되지 않음'}</div>
             <div>현재 호스트: {window.location.hostname}</div>
             <div>현재 프로토콜: {window.location.protocol}</div>
           </div>
         )}
         
-        {/* 모바일 네트워크 상태 표시 */}
         {isMobile && (
-          <div style={{ 
-            marginTop: '10px', 
-            padding: '8px', 
-            backgroundColor: 'rgba(255, 255, 0, 0.1)', 
-            borderRadius: '4px',
-            textAlign: 'center',
-            color: '#ffff00',
-            fontSize: '10px'
-          }}>
+          <div className="mobile-network-status">
             <div>📱 모바일 모드</div>
             <div>백엔드: {backendUrl}</div>
             <div>연결 상태: {isLoading ? '확인 중...' : '연결됨'}</div>
             <div>네트워크: {navigator.onLine ? '온라인' : '오프라인'}</div>
-            <div>PayPal 로드: {paypalLoaded ? '완료' : '로딩 중'}</div>
+            <div>결제 상태: {paymentStatus}</div>
           </div>
         )}
       </div>
@@ -578,7 +302,6 @@ function App() {
   // 데스크톱 전용 컴포넌트
   const DesktopView = () => (
     <div className="container">
-      {/* 사이드바 네비게이션 */}
       <div className="sidebar">
         <div className="sidebar-content">
           <div className="logo">Instagram</div>
@@ -623,9 +346,7 @@ function App() {
         </div>
       </div>
 
-      {/* 메인 컨텐츠 */}
       <div className="main-content">
-        {/* 스토리 섹션 */}
         <div className="stories-section">
           <div className="stories-container">
             <div className="story-item">
@@ -655,9 +376,7 @@ function App() {
           </div>
         </div>
 
-        {/* 포스트 카드 */}
         <div className="post-card">
-          {/* 포스트 헤더 */}
           <div className="post-header">
             <div className="user-info">
               <div className="profile-pic">👤</div>
@@ -668,7 +387,6 @@ function App() {
             <span className="more-button">⋯</span>
           </div>
 
-          {/* 포스트 이미지/동영상 */}
           <div className="image-section">
             {isVideoPlaying ? (
               <video 
@@ -699,7 +417,6 @@ function App() {
             </div>
           </div>
           
-          {/* 포스트 액션 */}
           <div className="post-actions">
             <div className="action-buttons">
               <span className="action-icon">❤️</span>
@@ -708,24 +425,19 @@ function App() {
               <span className="action-icon">🔖</span>
             </div>
             
-            {/* 좋아요 수 */}
             <div className="likes">좋아요 6개</div>
             
-            {/* 캡션 */}
             <div className="caption">
               <span className="username">dogunnny</span> [0802,+835] 성주 물맑은펜션 😊
             </div>
             
-            {/* 댓글 */}
             <div className="comments">
               <div className="view-comments">댓글 0개 모두 보기</div>
             </div>
             
-            {/* 시간 */}
             <div className="timestamp">10시간</div>
           </div>
           
-          {/* 댓글 입력 */}
           <div className="comment-input">
             <span className="emoji-button">😊</span>
             <input 
@@ -736,63 +448,47 @@ function App() {
             <button className="post-button">게시</button>
           </div>
           
-          {/* 결제 섹션 */}
           <div className="payment-section">
             <div className="price-info">
               <span className="price">{product.krw_price}</span>
-              <span className="usd-price">(USD ${product.price})</span>
+              <span className="usd-price">({PAYPAL_CONFIG.CURRENCY} ${product.price})</span>
             </div>
             
-            {/* PayPal 결제 버튼 */}
-            <div className="paypal-container" ref={paypalContainerRef}>
-              {!paypalLoaded && (
-                <div className="paypal-loading">
-                  PayPal 로딩 중...
-                </div>
-              )}
-            </div>
-            
-            {/* PayPal 로드 실패 시 대체 버튼 */}
-            {!paypalLoaded && (
-              <div style={{ 
-                marginTop: '16px', 
-                padding: '16px', 
-                backgroundColor: 'rgba(255, 255, 0, 0.1)', 
-                borderRadius: '8px',
-                textAlign: 'center',
-                color: '#ffff00',
-                fontSize: '14px'
-              }}>
-                <div style={{ marginBottom: '12px' }}>⚠️ PayPal 버튼을 로드할 수 없습니다</div>
+            <div className="paypal-payment-section">
+              <div className="paypal-title">
+                💳 PayPal 결제
+              </div>
+              <div className="paypal-subtitle">바로 구매</div>
+              <div className="paypal-note">아래 버튼으로 결제하세요.</div>
+              
+              <div className="paypal-single-button-container">
                 <button 
+                  className="pp-8W32WPWG2HFRU"
                   onClick={() => {
-                    console.log('PayPal SDK 재로드 시도');
-                    setPaypalLoaded(false);
-                    loadPayPalSDK();
-                  }}
-                  style={{
-                    background: 'linear-gradient(135deg, #0070ba 0%, #1546a0 100%)',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: 'white',
-                    padding: '12px 24px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    margin: '8px'
+                    window.open('https://www.paypal.com/ncp/payment/8W32WPWG2HFRU', '_blank');
                   }}
                 >
-                  PayPal 다시 로드
+                  바로 구매
                 </button>
-                <div style={{ marginTop: '8px', fontSize: '12px' }}>
-                  네트워크 연결을 확인하고 다시 시도해주세요
+                <div className="paypal-branding">
+                  <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
+                  <div className="paypal-provider">
+                    제공: <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" />
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
+            
+            <div className="payment-info-section">
+              <div className="payment-info-title">💳 결제 시스템</div>
+              <div>안전한 결제가 진행됩니다</div>
+              <div className="payment-info-note">
+                * 실제 결제가 진행되는 환경입니다
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 다음 포스트 미리보기 */}
         <div className="next-post-preview">
           <div className="next-post-header">
             <div className="next-post-user-info">
@@ -804,9 +500,7 @@ function App() {
         </div>
       </div>
 
-      {/* 오른쪽 사이드바 */}
       <div className="right-sidebar">
-        {/* 현재 사용자 */}
         <div className="current-user">
           <div className="current-user-pic">👤</div>
           <div className="current-user-info">
@@ -816,7 +510,6 @@ function App() {
           <button className="switch-button">전환</button>
         </div>
 
-        {/* 추천 섹션 */}
         <div className="suggestions-section">
           <div className="suggestions-header">
             <span className="suggestions-title">회원님을 위한 추천</span>
@@ -842,7 +535,6 @@ function App() {
           </div>
         </div>
 
-        {/* 푸터 링크 */}
         <div className="footer-links">
           <div className="footer-row">
             <a href="#" className="footer-link">소개</a>
@@ -863,15 +555,18 @@ function App() {
         </div>
       </div>
 
-      {/* 플로팅 메시지 버튼 */}
       <div className="floating-message">
         <span className="message-icon">💬</span>
       </div>
     </div>
   );
 
-  // 모바일 여부에 따라 다른 뷰 렌더링
-  return isMobile ? <MobileView /> : <DesktopView />;
+  return (
+    <div className="App">
+      {/* PayPalSDKLoader 제거됨 - 새로운 단일 버튼 사용 */}
+      {isMobile ? <MobileView /> : <DesktopView />}
+    </div>
+  );
 }
 
 export default App;

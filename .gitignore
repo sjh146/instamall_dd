@@ -48,6 +48,7 @@ MANIFEST
 venv/
 env/
 ENV/
+marketing/
 
 # IDE
 .vscode/

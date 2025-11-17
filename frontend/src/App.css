@@ -4,6 +4,12 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* PayPal Loading Spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* 전역 스타일 리셋 */
 * {
   box-sizing: border-box;
@@ -903,110 +909,7 @@ body {
   transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* PayPal JavaScript SDK 스타일 */
-.mobile-paypal-container {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 0 16px;
-  min-height: 55px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.paypal-container {
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-  min-height: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* PayPal 버튼 스타일 개선 */
-.mobile-paypal-container iframe,
-.paypal-container iframe {
-  width: 100% !important;
-  min-height: 55px !important;
-  border: none !important;
-  border-radius: 8px !important;
-}
-
-/* 모바일에서 PayPal 버튼 최적화 */
-@media (max-width: 768px) {
-  .mobile-paypal-container {
-    min-height: 60px;
-    padding: 8px 16px;
-  }
-  
-  .mobile-paypal-container iframe {
-    min-height: 60px !important;
-    max-width: 100% !important;
-  }
-  
-  /* PayPal 버튼이 모바일에서 더 잘 보이도록 */
-  .mobile-paypal-container > div {
-    width: 100% !important;
-    min-height: 60px !important;
-  }
-}
-
-/* PayPal 로딩 상태 */
-.paypal-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: #666;
-  font-size: 14px;
-  min-height: 55px;
-}
-
-.paypal-loading::after {
-  content: '';
-  width: 20px;
-  height: 20px;
-  margin-left: 10px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #0070ba;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* PayPal 버튼 비활성화 상태 */
-.paypal-disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-/* PayPal 에러 상태 */
-.paypal-error {
-  background-color: rgba(255, 0, 0, 0.1);
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-  color: #ff0000;
-  margin: 16px 0;
-}
-
-/* PayPal 성공 상태 */
-.paypal-success {
-  background-color: rgba(0, 255, 0, 0.1);
-  border: 1px solid rgba(0, 255, 0, 0.3);
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-  color: #00ff00;
-  margin: 16px 0;
-}
+/* 기존 PayPal SDK 스타일 제거됨 - 새로운 단일 버튼 사용 */
 
 /* 데스크톱에서 모바일 컨테이너 숨기기 */
 @media (min-width: 769px) {
@@ -1020,4 +923,166 @@ body {
   .container {
     display: none;
   }
+}
+
+/* 로딩 화면 스타일 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.loading-text {
+  margin-bottom: 20px;
+}
+
+.loading-subtext {
+  font-size: 14px;
+  color: #888;
+}
+
+/* PayPal 결제 섹션 스타일 */
+.paypal-payment-section {
+  text-align: center;
+  padding: 20px;
+  background: rgba(0, 112, 186, 0.1);
+  border-radius: 8px;
+  margin: 10px 0;
+  border: 2px solid #0070ba;
+}
+
+/* 새로운 PayPal 단일 버튼 스타일 */
+.paypal-single-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  border: 2px solid #FFD140;
+}
+
+.pp-8W32WPWG2HFRU {
+  text-align: center !important;
+  border: none !important;
+  border-radius: 0.25rem !important;
+  min-width: 11.625rem !important;
+  padding: 0 2rem !important;
+  height: 2.625rem !important;
+  font-weight: bold !important;
+  background-color: #FFD140 !important;
+  color: #000000 !important;
+  font-family: "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 1rem !important;
+  line-height: 1.25rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  max-width: 300px !important;
+  margin: 0 auto !important;
+}
+
+.pp-8W32WPWG2HFRU:hover {
+  background-color: #FFC107 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3) !important;
+}
+
+/* PayPal 브랜딩 스타일 */
+.paypal-branding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.paypal-branding img {
+  max-width: 200px !important;
+  height: auto !important;
+  display: block !important;
+}
+
+.paypal-provider {
+  font-size: 0.75rem !important;
+  color: #666 !important;
+  text-align: center !important;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.paypal-provider img {
+  height: 0.875rem !important;
+  vertical-align: middle !important;
+}
+
+.paypal-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0070ba;
+  margin-bottom: 10px;
+}
+
+.paypal-subtitle {
+  font-size: 14px;
+  color: #333;
+}
+
+.paypal-note {
+  font-size: 12px;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* 결제 정보 섹션 */
+.payment-info-section {
+  margin-top: 16px;
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  font-size: 12px;
+}
+
+.payment-info-title {
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.payment-info-note {
+  margin-top: 8px;
+  font-size: 10px;
+  color: #ccc;
+}
+
+/* 개발 모드 정보 */
+.dev-mode-info {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: rgba(0, 255, 0, 0.1);
+  border-radius: 4px;
+  text-align: center;
+  color: #00ff00;
+  font-size: 10px;
+}
+
+/* 모바일 네트워크 상태 */
+.mobile-network-status {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: rgba(255, 255, 0, 0.1);
+  border-radius: 4px;
+  text-align: center;
+  color: #ffff00;
+  font-size: 10px;
 }

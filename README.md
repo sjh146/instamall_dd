@@ -20,6 +20,7 @@
 ### Backend
 - Python 3.12
 - Flask
+- Gunicorn WSGI Server (프로덕션)
 - Flask-SQLAlchemy
 - PostgreSQL (with SQLite fallback)
 - Anaconda 환경 (dduckbeagy)
@@ -219,3 +220,93 @@ sudo journalctl -u docker
 ## 📄 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 배포됩니다. 
+
+# Instead Project
+
+## 📋 PayPal 웹훅 설정
+
+### **현재 웹훅 정보**
+```
+Webhook URL: https://192.168.75.39/api/webhooks/paypal
+Webhook ID: 7K771721GD998503X
+Events Tracked: All Events
+```
+
+### **PayPal 계정 정보**
+```
+App Name: dduckbeagy
+Client ID: AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+Secret Key: EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC
+```
+
+### **환경 변수 설정**
+
+#### **Backend (.env 파일 생성)**
+```bash
+# backend/.env 파일을 생성하고 다음 내용을 추가하세요:
+
+# PayPal 설정 (실제 값으로 교체하세요)
+PAYPAL_CLIENT_ID=AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+PAYPAL_CLIENT_SECRET=EBc2wFR6TGOorxPighDaT6u8ibbblW8Ku6mwrfsVYWjzWBhtyUWMG41OE1INZTmAezvIyXsbI2csrhNC
+PAYPAL_WEBHOOK_SECRET=your-paypal-webhook-secret-here
+
+# PayPal 웹훅 설정
+PAYPAL_WEBHOOK_ID=7K771721GD998503X
+PAYPAL_WEBHOOK_URL=https://192.168.75.39/api/webhooks/paypal
+
+# Flask 설정
+SECRET_KEY=your-secret-key-here
+FLASK_ENV=development
+
+# 데이터베이스 설정
+DB_HOST=postgres
+DB_PORT=5432
+DB_USERNAME=instagram_user
+DB_PASSWORD=instagram_password
+DB_NAME=instagram_db
+
+# Redis 설정
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password-here
+```
+
+#### **Frontend (.env 파일 생성)**
+```bash
+# frontend/.env 파일을 생성하고 다음 내용을 추가하세요:
+
+# PayPal 설정 (실제 값으로 교체하세요)
+REACT_APP_PAYPAL_CLIENT_ID=AZREWLa1aIlO5AJsS8LHGSQjInUK0ZH3fsLifMU-oPUV6eDqgR17kWFxpxv_8Rb65852p84b1u_1Tnt7
+
+# 백엔드 설정
+REACT_APP_BACKEND_URL=https://192.168.75.39
+REACT_APP_BACKEND_PORT=5000
+
+# 환경 설정
+NODE_ENV=production
+```
+
+### **웹훅 테스트**
+```bash
+# 웹훅 시뮬레이션 테스트
+curl -X POST http://localhost:5000/api/webhooks/simulate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "event_type": "PAYMENT.CAPTURE.COMPLETED",
+    "id": "WH-TEST-1234567890",
+    "resource": {
+      "id": "2GG3456789012345",
+      "status": "COMPLETED",
+      "amount": {
+        "currency_code": "USD",
+        "value": "75.00"
+      }
+    }
+  }'
+```
+
+## 📚 상세 문서
+
+- [웹훅 설정 가이드](WEBHOOK_SETUP.md)
+- [웹훅 시크릿 설정 가이드](PAYPAL_WEBHOOK_SECRET_SETUP.md)
+- [배포 가이드](DEPLOYMENT.md) 
