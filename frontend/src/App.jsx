@@ -182,119 +182,183 @@ function App() {
     );
   }
 
-  // 모바일 전용 컴포넌트
+  // 모바일 전용 컴포넌트 (design.jsx 스타일 적용)
   const MobileView = () => (
-    <div className="mobile-container">
-      <div className="mobile-header">
-        <div className="mobile-header-left">
-          <div className="mobile-user-info">
-            <div className="mobile-profile-pic">👤</div>
-            <span className="mobile-username">dogunnny</span>
-          </div>
-        </div>
+    <div style={{width: '100vw', minHeight: '100vh', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', background: '#CECAC0', overflow: 'auto', padding: '10px 0'}}>
+      {/* 휴대폰 프레임 */}
+      <div style={{width: '100%', maxWidth: '457.75px', minHeight: '100vh', position: 'relative', margin: '0 auto'}}>
+        {/* 휴대폰 화면 배경 - 반응형 */}
+        <div style={{width: 'calc(100% - 4px)', minHeight: '100vh', left: '2px', top: 0, position: 'absolute', background: '#B4AD98', borderRadius: '20px', boxShadow: '0px 0px 1.39px 2.09px rgba(0, 0, 0, 0.30) inset'}} />
+        <div style={{width: 'calc(100% - 16px)', minHeight: 'calc(100vh - 12px)', left: '8px', top: '6px', position: 'absolute', background: 'black', borderRadius: '15px', boxShadow: '0px -0.70px 2.43px 2.09px rgba(220, 236, 255, 0.61)'}} />
+        <div style={{width: 'calc(100% - 16px)', minHeight: 'calc(100vh - 12px)', left: '8px', top: '6px', position: 'absolute', borderRadius: '15px', border: '0.70px rgba(255, 255, 255, 0.80) solid', filter: 'blur(1.74px)', pointerEvents: 'none'}} />
         
-        <div className="mobile-header-center">
-          <div className="instagram-logo" onClick={handleInstagramClick}>
-            Instagram
+        {/* 메인 콘텐츠 영역 - 반응형 및 스크롤 가능 */}
+        <div style={{width: 'calc(100% - 26px)', minHeight: 'calc(100vh - 84px)', paddingTop: '45px', paddingBottom: '20px', left: '13px', top: '42px', position: 'absolute', background: 'white', overflow: 'visible', borderRadius: '15px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
+          {/* 상단 헤더 */}
+          <div style={{alignSelf: 'stretch', paddingTop: 12.52, paddingBottom: 12.52, paddingLeft: 6.26, paddingRight: 12.52, justifyContent: 'flex-start', alignItems: 'center', gap: 16.70, display: 'flex', flexShrink: 0}}>
+            <div style={{width: 25.25, height: 25.25, position: 'relative', cursor: 'pointer'}}>
+              <div style={{width: 8.49, height: 16.76, left: 8.38, top: 4.24, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+            </div>
+            <div style={{flex: '1 1 0', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
+              <div style={{width: 201.97, height: 25.53, textAlign: 'center', color: '#262626', fontSize: 16.70, fontFamily: 'Inter', fontWeight: '600', lineHeight: 21.71, wordWrap: 'break-word', cursor: 'pointer'}} onClick={handleInstagramClick}>
+                joengn.design
+              </div>
+            </div>
+            <div style={{width: 25.25, height: 25.25, position: 'relative', cursor: 'pointer'}}>
+              <div style={{width: 3.16, height: 3.16, left: 11.05, top: 11.05, position: 'absolute', background: 'black'}} />
+              <div style={{width: 3.16, height: 3.16, left: 4.79, top: 11, position: 'absolute', background: 'black'}} />
+              <div style={{width: 3.16, height: 3.16, left: 17.31, top: 11.10, position: 'absolute', background: 'black'}} />
+            </div>
           </div>
-        </div>
-        
-        <div className="mobile-header-right">
-          <div className="mobile-action-buttons">
-            <button 
-              className={`mobile-like-button ${isLiked ? 'liked' : ''}`}
-              onClick={handleLikeClick}
-            >
-              {isLiked ? '❤️' : '🤍'}
-            </button>
-            <button className="mobile-message-button">
-              ✈️
-            </button>
-          </div>
-        </div>
-      </div>
 
-      <div className="mobile-video-section">
-        {isVideoPlaying ? (
-          <video 
-            src={product.videoUrl} 
-            controls 
-            autoPlay 
-            className="mobile-video"
-            onEnded={() => setIsVideoPlaying(false)}
-          />
-        ) : (
-          <div className="mobile-image-container">
-            <img src={product.imageUrl} alt="Post" className="mobile-image" />
-            <button 
-              className="mobile-video-play-button"
-              onClick={handleVideoClick}
-            >
-              ▶️
-            </button>
+          {/* 프로필 섹션 */}
+          <div style={{alignSelf: 'stretch', paddingLeft: 16.70, paddingRight: 16.70, justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex', flexShrink: 0}}>
+            <div style={{padding: 6.26, borderRadius: 1042.47, outline: '1.99px #A8A8A8 solid', outlineOffset: '-1.99px', justifyContent: 'flex-start', alignItems: 'center', gap: 8.35, display: 'flex'}}>
+              <div style={{width: 94.69, height: 94.69, position: 'relative', overflow: 'hidden', borderRadius: 138.45}}>
+                <div style={{width: 94.69, height: 94.69, left: 0, top: 0, position: 'absolute', background: '#121714'}} />
+                <img src={product.imageUrl} alt="Profile" style={{width: 94.69, height: 94.69, objectFit: 'cover'}} />
+              </div>
+            </div>
+            <div style={{justifyContent: 'flex-start', alignItems: 'flex-start', gap: 2.98, display: 'flex'}}>
+              <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 2.09, display: 'inline-flex'}}>
+                <div style={{width: 76.73, height: 24.49, textAlign: 'center', color: '#262626', fontSize: 17.89, fontFamily: 'Inter', fontWeight: '600', lineHeight: 23.26, wordWrap: 'break-word'}}>102</div>
+                <div style={{width: 83.60, textAlign: 'center', color: '#262626', fontSize: 12.92, fontFamily: 'Inter', fontWeight: '400', lineHeight: 12.92, letterSpacing: 0.13, wordWrap: 'break-word'}}>posts</div>
+              </div>
+              <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 2.09, display: 'inline-flex'}}>
+                <div style={{width: 76.73, height: 24.49, textAlign: 'center', color: '#262626', fontSize: 17.89, fontFamily: 'Inter', fontWeight: '600', lineHeight: 23.26, wordWrap: 'break-word'}}>5,413</div>
+                <div style={{width: 83.60, textAlign: 'center', color: '#262626', fontSize: 12.92, fontFamily: 'Inter', fontWeight: '400', lineHeight: 12.92, letterSpacing: 0.13, wordWrap: 'break-word'}}>followers</div>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
 
-      <div className="mobile-payment-section">
-        <div className="mobile-price-info">
-          <span className="mobile-price">{product.krw_price}</span>
-          <span className="mobile-usd-price">({PAYPAL_CONFIG.CURRENCY} ${product.price})</span>
-        </div>
-        
-        <div className="paypal-payment-section">
-          <div className="paypal-title">
-            💳 PayPal 결제
+          {/* 프로필 정보 */}
+          <div style={{alignSelf: 'stretch', paddingLeft: 16.70, paddingRight: 16.70, paddingTop: 8.35, paddingBottom: 8.35, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 2.09, display: 'flex', flexShrink: 0}}>
+            <div style={{alignSelf: 'stretch', height: 23, color: '#262626', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '500', lineHeight: 18.99, wordWrap: 'break-word'}}>{product.name}</div>
+            <div style={{alignSelf: 'stretch', color: '#262626', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '400', lineHeight: 18.99, wordWrap: 'break-word'}}>{product.description}</div>
+            <div style={{alignSelf: 'stretch', color: '#00386F', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '400', lineHeight: 18.99, wordWrap: 'break-word'}}>www.instagram.com/joengn</div>
           </div>
-          <div className="paypal-subtitle">바로 구매</div>
-          <div className="paypal-note">아래 버튼으로 결제하세요.</div>
-          
-          <div className="paypal-single-button-container">
-            <button 
-              className="pp-8W32WPWG2HFRU"
-              onClick={() => {
-                window.open('https://www.paypal.com/ncp/payment/8W32WPWG2HFRU', '_blank');
-              }}
-            >
-              바로 구매
-            </button>
-            <div className="paypal-branding">
-              <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
-              <div className="paypal-provider">
-                제공: <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" />
+
+          {/* 버튼 섹션 */}
+          <div style={{alignSelf: 'stretch', paddingLeft: 16.70, paddingRight: 16.70, paddingTop: 12.52, paddingBottom: 12.52, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 2.09, display: 'flex', flexShrink: 0}}>
+            <div style={{width: '100%', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 6.26, display: 'inline-flex'}}>
+              <button 
+                style={{flex: '1 1 0', alignSelf: 'stretch', paddingLeft: 20.87, paddingRight: 20.87, paddingTop: 8.35, paddingBottom: 8.35, background: '#EFEFEF', borderRadius: 7.95, justifyContent: 'center', alignItems: 'center', gap: 8.35, display: 'flex', border: 'none', cursor: 'pointer'}}
+                onClick={handleLikeClick}
+              >
+                <div style={{color: '#262626', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '600', lineHeight: 18.99, wordWrap: 'break-word'}}>
+                  {isLiked ? '❤️ Liked' : '🤍 Like'}
+                </div>
+              </button>
+              <button 
+                style={{flex: '1 1 0', alignSelf: 'stretch', paddingLeft: 20.87, paddingRight: 20.87, paddingTop: 8.35, paddingBottom: 8.35, background: '#EFEFEF', borderRadius: 7.95, justifyContent: 'center', alignItems: 'center', gap: 4.17, display: 'flex', border: 'none', cursor: 'pointer'}}
+                onClick={() => window.open('https://www.paypal.com/ncp/payment/8W32WPWG2HFRU', '_blank')}
+              >
+                <div style={{color: '#262626', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '600', lineHeight: 18.99, wordWrap: 'break-word'}}>구매</div>
+              </button>
+            </div>
+          </div>
+
+          {/* 가격 및 결제 섹션 */}
+          <div style={{alignSelf: 'stretch', paddingLeft: 16.70, paddingRight: 16.70, paddingTop: 8.35, paddingBottom: 8.35, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 8.35, display: 'flex', flexShrink: 0}}>
+            <div style={{alignSelf: 'stretch', color: '#262626', fontSize: 18, fontFamily: 'Inter', fontWeight: '600', lineHeight: 24, wordWrap: 'break-word'}}>
+              {product.krw_price} ({PAYPAL_CONFIG.CURRENCY} ${product.price})
+            </div>
+            <div style={{alignSelf: 'stretch', padding: 12.52, background: '#F5F5F5', borderRadius: 7.95, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 8.35, display: 'flex'}}>
+              <div style={{color: '#262626', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '600', lineHeight: 18.99, wordWrap: 'break-word'}}>💳 PayPal 결제</div>
+              <div style={{color: '#262626', fontSize: 12.52, fontFamily: 'Inter', fontWeight: '400', lineHeight: 16.28, wordWrap: 'break-word'}}>안전한 결제가 진행됩니다</div>
+              <button 
+                style={{alignSelf: 'stretch', padding: 12.52, background: '#0070BA', borderRadius: 7.95, color: 'white', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '600', border: 'none', cursor: 'pointer'}}
+                onClick={() => window.open('https://www.paypal.com/ncp/payment/8W32WPWG2HFRU', '_blank')}
+              >
+                바로 구매하기
+              </button>
+              <div style={{alignSelf: 'stretch', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4.17, marginTop: 4.17}}>
+                <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" style={{height: 20}} />
+              </div>
+            </div>
+          </div>
+
+          {/* 비디오/이미지 섹션 */}
+          <div style={{alignSelf: 'stretch', paddingLeft: 16.70, paddingRight: 16.70, paddingTop: 12.52, paddingBottom: 12.52, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 2.09, display: 'flex', flexShrink: 0}}>
+            <div style={{width: '100%', position: 'relative', borderRadius: 7.95, overflow: 'hidden', background: '#000'}}>
+              {isVideoPlaying ? (
+                <video 
+                  src={product.videoUrl} 
+                  controls 
+                  autoPlay 
+                  style={{width: '100%', height: 'auto', display: 'block'}}
+                  onEnded={() => setIsVideoPlaying(false)}
+                />
+              ) : (
+                <div style={{position: 'relative', width: '100%', paddingTop: '100%', background: '#000'}}>
+                  <img 
+                    src={product.imageUrl} 
+                    alt="Post" 
+                    style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}}
+                  />
+                  <button 
+                    style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 60, height: 60, borderRadius: '50%', background: 'rgba(0, 0, 0, 0.6)', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 24}}
+                    onClick={handleVideoClick}
+                  >
+                    ▶️
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 하단 네비게이션 */}
+          <div style={{width: '100%', marginTop: 'auto', paddingTop: 12.52, paddingBottom: 16.70, borderTop: '1px solid #EFEFEF', flexShrink: 0}}>
+            <div style={{alignSelf: 'stretch', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
+              <div style={{flex: '1 1 0', padding: 12.52, justifyContent: 'center', alignItems: 'center', gap: 8.35, display: 'flex'}}>
+                <div style={{width: 25.25, height: 25.25, position: 'relative'}}>
+                  <div style={{width: 21.04, height: 21.04, left: 2.10, top: 2.10, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                </div>
+              </div>
+              <div style={{flex: '1 1 0', padding: 12.52, justifyContent: 'center', alignItems: 'center', gap: 8.35, display: 'flex'}}>
+                <div style={{width: 25.25, height: 25.25, position: 'relative'}}>
+                  <div style={{width: 17.89, height: 17.89, left: 2.13, top: 2.10, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                  <div style={{width: 5.78, height: 5.78, left: 17.25, top: 17.37, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                </div>
+              </div>
+              <div style={{flex: '1 1 0', padding: 12.52, justifyContent: 'center', alignItems: 'center', gap: 8.35, display: 'flex'}}>
+                <div style={{width: 25.25, height: 25.25, position: 'relative'}}>
+                  <div style={{width: 21.04, height: 21.04, left: 2.10, top: 2.10, position: 'absolute', borderRadius: 6.26, outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                  <div style={{width: 0.09, height: 10.43, left: 12.80, top: 7.63, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                  <div style={{width: 0.09, height: 10.43, left: 18.06, top: 12.80, position: 'absolute', transform: 'rotate(90deg)', transformOrigin: 'top left', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                </div>
+              </div>
+              <div style={{flex: '1 1 0', padding: 12.52, justifyContent: 'center', alignItems: 'center', gap: 8.35, display: 'flex'}}>
+                <div style={{width: 25.25, height: 25.25, position: 'relative'}}>
+                  <div style={{width: 20.77, height: 0.17, left: 2.29, top: 7.32, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                  <div style={{width: 3.03, height: 5.24, left: 14.24, top: 2.20, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                  <div style={{width: 2.96, height: 5.13, left: 7.67, top: 2.26, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                  <div style={{width: 21.04, height: 21.04, left: 2.10, top: 2.10, position: 'absolute', outline: '2.09px black solid', outlineOffset: '-1.04px'}} />
+                  <div style={{width: 6.70, height: 7.43, left: 9.77, top: 11.27, position: 'absolute', background: 'black'}} />
+                </div>
+              </div>
+              <div style={{flex: '1 1 0', padding: 12.52, justifyContent: 'center', alignItems: 'center', gap: 8.35, display: 'flex'}}>
+                <div style={{overflow: 'hidden', borderRadius: 1042.47, outline: '1.57px #262626 solid', outlineOffset: '-1.57px', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
+                  <div style={{width: 25.25, height: 25.25, position: 'relative', overflow: 'hidden', borderRadius: 138.45}}>
+                    <div style={{width: 25.25, height: 25.25, left: 0, top: 0, position: 'absolute', background: '#121714'}} />
+                    <img src={product.imageUrl} alt="Profile" style={{width: 25.25, height: 25.25, objectFit: 'cover'}} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        
-        <div className="payment-info-section">
-          <div className="payment-info-title">💳 결제 시스템</div>
-          <div>안전한 결제가 진행됩니다</div>
-          <div className="payment-info-note">
-            * 실제 결제가 진행되는 환경입니다
+
+        {/* 상태 표시줄 - 모바일에서는 숨김 */}
+        <div style={{display: 'none', width: 'calc(100% - 12px)', height: 49.32, left: '6px', top: 0, position: 'absolute', overflow: 'hidden'}}>
+          <div style={{width: 56.53, height: 22.38, left: 28.44, top: 12.76, position: 'absolute', borderRadius: 25.04}}>
+            <div style={{width: 56.52, height: 21.34, left: 0, top: 1.04, position: 'absolute', textAlign: 'center', color: 'black', fontSize: 17.74, fontFamily: 'SF Pro Text', fontWeight: '600', lineHeight: 22.96, wordWrap: 'break-word'}}>9:41</div>
           </div>
+          <div style={{width: 26.20, height: 13.78, left: 353.59, top: 20.67, position: 'absolute', opacity: 0.35, borderRadius: 4.17, border: '1.10px black solid'}} />
+          <div style={{width: 1.50, height: 4.42, left: 380.75, top: 26.11, position: 'absolute', opacity: 0.40, background: 'black'}} />
+          <div style={{width: 21.99, height: 9.57, left: 355.69, top: 22.78, position: 'absolute', background: 'black', borderRadius: 2.09}} />
+          <div style={{width: 18.89, height: 12.68, left: 301.41, top: 21.28, position: 'absolute', background: 'black'}} />
         </div>
-        
-        {process.env.NODE_ENV === 'development' && (
-          <div className="dev-mode-info">
-            <div>개발 모드</div>
-            <div>백엔드 URL: {backendUrl}</div>
-            <div>PayPal 환경: {PAYPAL_CONFIG.getEnvironmentDisplayName()}</div>
-            <div>PayPal Client ID: {PAYPAL_CONFIG.CLIENT_ID ? PAYPAL_CONFIG.CLIENT_ID.substring(0, 10) + '...' : '설정되지 않음'}</div>
-            <div>현재 호스트: {window.location.hostname}</div>
-            <div>현재 프로토콜: {window.location.protocol}</div>
-          </div>
-        )}
-        
-        {isMobile && (
-          <div className="mobile-network-status">
-            <div>📱 모바일 모드</div>
-            <div>백엔드: {backendUrl}</div>
-            <div>연결 상태: {isLoading ? '확인 중...' : '연결됨'}</div>
-            <div>네트워크: {navigator.onLine ? '온라인' : '오프라인'}</div>
-            <div>결제 상태: {paymentStatus}</div>
-          </div>
-        )}
       </div>
     </div>
   );
