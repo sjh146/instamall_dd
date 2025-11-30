@@ -216,7 +216,15 @@ function App() {
             <div style={{padding: 6.26, borderRadius: 1042.47, outline: '1.99px #A8A8A8 solid', outlineOffset: '-1.99px', justifyContent: 'flex-start', alignItems: 'center', gap: 8.35, display: 'flex'}}>
               <div style={{width: 94.69, height: 94.69, position: 'relative', overflow: 'hidden', borderRadius: 138.45}}>
                 <div style={{width: 94.69, height: 94.69, left: 0, top: 0, position: 'absolute', background: '#121714'}} />
-                <img src={product.imageUrl} alt="Profile" style={{width: 94.69, height: 94.69, objectFit: 'cover'}} />
+                <img 
+                  src="/youtuber.png" 
+                  alt="Profile" 
+                  style={{width: 94.69, height: 94.69, objectFit: 'cover'}}
+                  onError={(e) => {
+                    console.error('이미지 로드 실패:', e.target.src);
+                    e.target.src = '/youtuber.png';
+                  }}
+                />
               </div>
             </div>
             <div style={{justifyContent: 'flex-start', alignItems: 'flex-start', gap: 2.98, display: 'flex'}}>
@@ -236,6 +244,48 @@ function App() {
             <div style={{alignSelf: 'stretch', height: 23, color: '#262626', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '500', lineHeight: 18.99, wordWrap: 'break-word'}}>{product.name}</div>
             <div style={{alignSelf: 'stretch', color: '#262626', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '400', lineHeight: 18.99, wordWrap: 'break-word'}}>{product.description}</div>
             <div style={{alignSelf: 'stretch', color: '#00386F', fontSize: 14.61, fontFamily: 'Inter', fontWeight: '400', lineHeight: 18.99, wordWrap: 'break-word'}}>www.instagram.com/joengn</div>
+          </div>
+
+          {/* 상품 사진 그리드 섹션 - 프로필 바로 아래 세로 배치 */}
+          <div style={{alignSelf: 'stretch', paddingLeft: 16.70, paddingRight: 16.70, paddingTop: 12.52, paddingBottom: 12.52, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 1.04, display: 'flex', flexShrink: 0}}>
+            <div style={{width: '100%', display: 'flex', flexDirection: 'column', gap: 1.04}}>
+              <div style={{width: '100%', position: 'relative', overflow: 'hidden', background: '#FF5210'}}>
+                <div style={{width: '100%', paddingTop: '100%', position: 'relative'}}>
+                  <img 
+                    src="/watch.png" 
+                    alt="Watch" 
+                    style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}}
+                  />
+                </div>
+              </div>
+              <div style={{width: '100%', position: 'relative', overflow: 'hidden', background: '#FF5210'}}>
+                <div style={{width: '100%', paddingTop: '100%', position: 'relative'}}>
+                  <img 
+                    src="/perfum.png" 
+                    alt="Perfume" 
+                    style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}}
+                  />
+                </div>
+              </div>
+              <div style={{width: '100%', position: 'relative', overflow: 'hidden', background: '#FF5210'}}>
+                <div style={{width: '100%', paddingTop: '100%', position: 'relative'}}>
+                  <img 
+                    src="/cosmetic.png" 
+                    alt="Cosmetic" 
+                    style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}}
+                  />
+                </div>
+              </div>
+              <div style={{width: '100%', position: 'relative', overflow: 'hidden', background: '#FF5210'}}>
+                <div style={{width: '100%', paddingTop: '100%', position: 'relative'}}>
+                  <img 
+                    src="/camera.png" 
+                    alt="Camera" 
+                    style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 버튼 섹션 */}
@@ -341,7 +391,15 @@ function App() {
                 <div style={{overflow: 'hidden', borderRadius: 1042.47, outline: '1.57px #262626 solid', outlineOffset: '-1.57px', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                   <div style={{width: 25.25, height: 25.25, position: 'relative', overflow: 'hidden', borderRadius: 138.45}}>
                     <div style={{width: 25.25, height: 25.25, left: 0, top: 0, position: 'absolute', background: '#121714'}} />
-                    <img src={product.imageUrl} alt="Profile" style={{width: 25.25, height: 25.25, objectFit: 'cover'}} />
+                    <img 
+                      src="/youtuber.png" 
+                      alt="Profile" 
+                      style={{width: 25.25, height: 25.25, objectFit: 'cover'}}
+                      onError={(e) => {
+                        console.error('이미지 로드 실패:', e.target.src);
+                        e.target.src = '/youtuber.png';
+                      }}
+                    />
                   </div>
                 </div>
               </div>
